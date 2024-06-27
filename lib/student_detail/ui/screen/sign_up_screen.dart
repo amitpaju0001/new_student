@@ -1,7 +1,8 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:student_info/auth/model/user_model.dart';
 import 'package:student_info/student_detail/model/reuse_validator_model.dart';
+import 'package:student_info/student_detail/service/database_service.dart';
 import 'package:student_info/student_detail/shared/const.dart';
 import 'package:student_info/student_detail/ui/screen/login_screen.dart';
 import 'package:student_info/student_detail/ui/screen/student_screen.dart';
@@ -17,6 +18,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool passToggle = true;
   final GlobalKey<FormState> formKey = GlobalKey();
 
+  TextEditingController emailController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -31,15 +37,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   height: 10,
                 ),
                 const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Icon(Icons.person)
-                ),
+                    padding: EdgeInsets.all(20), child: Icon(Icons.person)),
                 const SizedBox(
                   height: 16,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
                   child: TextFormField(
+                    controller: nameController,
                     decoration: const InputDecoration(
                       labelText: StringConst.signUpName,
                       border: OutlineInputBorder(),
@@ -49,8 +55,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
                   child: TextFormField(
+                    controller: emailController,
                     decoration: const InputDecoration(
                       labelText: StringConst.signUpEmail,
                       border: OutlineInputBorder(),
@@ -60,8 +68,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
                   child: TextFormField(
+                    controller: phoneController,
                     decoration: const InputDecoration(
                       labelText: StringConst.signUpPhone,
                       border: OutlineInputBorder(),
@@ -72,8 +82,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
                   child: TextFormField(
+                    controller: passwordController,
                     obscureText: passToggle ? true : false,
                     decoration: InputDecoration(
                         labelText: StringConst.signUpPassword,
@@ -107,7 +118,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       borderRadius: BorderRadius.circular(10),
                       child: InkWell(
                         onTap: () {
-                          if(formKey.currentState?.validate()??false) {
+                          if (formKey.currentState?.validate() ?? false) {
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
@@ -116,13 +127,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           }
                         },
                         child: const Padding(
-                          padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 40),
                           child: Center(
                             child: Text(
                               StringConst.signUp,
                               style: TextStyle(
-                                  color:Colors.white,
+                                  color: Colors.white,
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold),
                             ),
@@ -147,11 +158,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ));
+                        register(context);
                       },
                       child: const Text(
                         StringConst.logIn,
@@ -170,5 +177,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
+  }
+
+  Future register(BuildContext context) async {
+    DatabaseService databaseService = DatabaseService();
+    bool isUserExist = await databaseService.isUserExists(emailController.text);
+    if (!isUserExist) {
+      try {
+        UserModel userModel = UserModel(
+            userName: nameController.text,
+            password: passwordController.text,
+            phone: phoneController.text,
+            email: emailController.text);
+        await databaseService.registerUser(userModel);
+        if(mounted) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(),
+              ));
+        }
+      } catch (e) {
+        print(e.toString());
+      }
+    }else{
+      print('User already exists');
+    }
   }
 }

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:student_info/student_detail/shared/const.dart';
 import 'package:student_info/student_detail/ui/screen/login_screen.dart';
-import 'package:student_info/student_detail/ui/screen/sign_up_Screen.dart';
+import 'package:student_info/student_detail/ui/screen/sign_up_screen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 

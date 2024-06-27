@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:student_info/student_detail/model/reuse_validator_model.dart';
+import 'package:student_info/student_detail/service/database_service.dart';
 import 'package:student_info/student_detail/shared/const.dart';
-import 'package:student_info/student_detail/ui/screen/sign_up_Screen.dart';
+import 'package:student_info/student_detail/ui/screen/sign_up_screen.dart';
 import 'package:student_info/student_detail/ui/screen/student_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +17,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool passToggle = true;
   final GlobalKey<FormState> formKey = GlobalKey();
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -36,12 +40,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (formKey.currentState?.validate() ?? false) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const StudentScreen()),
-      );
+      DatabaseService databaseService = DatabaseService();
+      bool isLogin = await databaseService.login(
+          emailController.text, passwordController.text);
+      if (isLogin && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const StudentScreen()),
+        );
+      } else {
+        print('Invalid email or password');
+      }
     }
   }
 
@@ -111,7 +120,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: InkWell(
                         onTap: _login,
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 40),
                           child: Center(
                             child: Text(
                               'Log In',
@@ -145,7 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpScreen()),
                         );
                       },
                       child: const Text(
